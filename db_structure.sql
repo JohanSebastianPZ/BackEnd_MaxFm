@@ -142,6 +142,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   email          TEXT NOT NULL UNIQUE,
   password_hash  TEXT NOT NULL, -- Contraseña cifrada
   rol            TEXT CHECK(rol IN ('admin','editor')) DEFAULT 'editor', -- Nivel de permisos
+  token_sesion   TEXT,          -- Token para la SPA en React
   activo         INTEGER DEFAULT 1,
   ultimo_acceso  DATETIME,
   creado_en      DATETIME DEFAULT CURRENT_TIMESTAMP,

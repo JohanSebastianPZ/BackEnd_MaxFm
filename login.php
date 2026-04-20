@@ -76,10 +76,21 @@ if (!$user) {
 
 // Verificar contraseña (Asumiendo que usas password_hash en PHP)
 if ($user && password_verify($password, $user['password_hash'])) {
-    // Aquí podrías generar un token, por ahora enviamos éxito
+    // Generamos un token único y seguro
+    $token = bin2hex(random_bytes(32));
+
+    // Guardamos el token en la base de datos para este usuario
+    $updateStmt = $db->prepare("UPDATE usuarios SET token_sesion = :token, ultimo_acceso = CURRENT_TIMESTAMP WHERE id = :id");
+    $updateStmt->bindParam(':token', $token);
+    $updateStmt->bindParam(':id', $user['id']);
+    $updateStmt->execute();
+
+    // Enviamos respuesta exitosa con el token
     echo json_encode([
         "success" => true,
+        "token" => $token,
         "user" => [
+            "id" => $user['id'],
             "nombre" => $user['nombre'],
             "rol" => $user['rol']
         ]
