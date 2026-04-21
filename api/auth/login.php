@@ -1,55 +1,12 @@
 <?php
 
-// 1. FUNCIÓN PARA LEER EL ARCHIVO .env
-function cargarEnv($ruta) {
-    if (!file_exists($ruta)) return; // Si no existe el .env, no hace nada
-    
-    $lineas = file($ruta, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lineas as $linea) {
-        // Ignorar los comentarios (líneas que empiezan con #)
-        if (strpos(trim($linea), '#') === 0) continue;
-        
-        // Separar el nombre de la variable y su valor
-        list($nombre, $valor) = explode('=', $linea, 2);
-        
-        // Guardarlo en el entorno de PHP
-        $_ENV[trim($nombre)] = trim($valor);
-    }
-}
+require_once '../../config/cors.php';
+require_once '../../config/database.php';
+require_once '../../config/auth.php';
 
-// Ejecutamos la función buscando el archivo .env en esta misma carpeta
-cargarEnv(__DIR__ . '/.env');
+configurarCORS();
 
-// 2. CONFIGURACIÓN DE SEGURIDAD (CORS) USANDO EL .env
-
-$allowed_origins = [
-    $_ENV['FRONTEND_URL_LOCAL'] ?? '',
-    $_ENV['FRONTEND_URL_PROD'] ?? ''
-];
-
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-
-if (in_array($origin, $allowed_origins)) {
-    header("Access-Control-Allow-Origin: " . $origin);
-} else {
-    if ($origin !== '') {
-        header("HTTP/1.1 403 Forbidden");
-        echo json_encode(["success" => false, "message" => "Acceso denegado (CORS)"]);
-        exit;
-    }
-}
-
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Content-Type: application/json");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
-}
-
-// Conexión a SQLite
-$db_file = $_ENV['DB_NAME'] ?? 'database.db';
-$db = new PDO('sqlite:' . __DIR__ . '/' . $db_file);
+$db = conectarDB();
 
 // Obtener datos del POST (React envía JSON)
 $data = json_decode(file_get_contents("php://input"), true);
@@ -98,4 +55,3 @@ if ($user && password_verify($password, $user['password_hash'])) {
 } else {
     echo json_encode(["success" => false, "message" => "Usuario o contraseña incorrectos"]);
 }
-?>
