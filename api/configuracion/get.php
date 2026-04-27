@@ -9,8 +9,11 @@ requireAuth();
 
 $db = conectarDB();
 
-// Lógica para get configuración
-// TODO: Implementar
+$config = $db->query("SELECT * FROM config_general LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+$chat   = $db->query("SELECT * FROM chat_config LIMIT 1")->fetch(PDO::FETCH_ASSOC);
 
-echo json_encode(["success" => true, "message" => "get configuración - Implementar lógica"]);
-
+echo json_encode([
+    "success"        => true,
+    "config_general" => $config ?: null,
+    "chat_config"    => $chat   ?: null,
+]);
