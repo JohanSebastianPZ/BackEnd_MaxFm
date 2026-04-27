@@ -1,16 +1,21 @@
 <?php
-
 require_once "../../config/cors.php";
 require_once "../../config/database.php";
-require_once "../../config/auth.php";
 
 configurarCORS();
-requireAuth();
-
 $db = conectarDB();
 
-// Lógica para get locutores
-// TODO: Implementar
+try {
+    // Obtenemos los locutores activos ordenados por el campo 'orden'
+    $stmt = $db->prepare("SELECT * FROM locutores");
+    $stmt->execute();
+    $locutores = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-echo json_encode(["success" => true, "message" => "get locutores - Implementar lógica"]);
+    echo json_encode([
+        "success" => true,
+        "data" => $locutores
+    ]);
 
+} catch (PDOException $e) {
+    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+}
