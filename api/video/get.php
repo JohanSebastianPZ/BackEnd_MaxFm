@@ -4,9 +4,6 @@ require_once "../../config/database.php";
 require_once "../../config/auth.php";
 
 configurarCORS();
-// Opcional: Si quieres que el video sea público en la landing, 
-// podrías comentar requireAuth() en el GET, pero dejarlo para el UPDATE.
-requireAuth(); 
 
 $db = conectarDB();
 
