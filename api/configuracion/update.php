@@ -3,6 +3,7 @@
 require_once "../../config/cors.php";
 require_once "../../config/database.php";
 require_once "../../config/auth.php";
+require_once "../../utils/upload.php";
 
 configurarCORS();
 requireAuth();
@@ -27,9 +28,16 @@ $camposConfig = [
 
 $configData = $data['config_general'] ?? [];
 
-$existingConfig = $db->query("SELECT id FROM config_general LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+$existingConfig = $db->query("SELECT id, logo FROM config_general LIMIT 1")->fetch(PDO::FETCH_ASSOC);
 
 if ($existingConfig) {
+    // Si el logo cambió y el anterior era un archivo nuestro, eliminarlo
+    $logoNuevo   = $configData['logo'] ?? '';
+    $logoAnterior = $existingConfig['logo'] ?? '';
+    if ($logoAnterior !== $logoNuevo) {
+        eliminarImagen($logoAnterior);
+    }
+
     $sets = implode(', ', array_map(fn($c) => "$c = :$c", $camposConfig));
     $stmt = $db->prepare("UPDATE config_general SET $sets, actualizado_en = CURRENT_TIMESTAMP WHERE id = :id");
     $stmt->bindValue(':id', $existingConfig['id']);
