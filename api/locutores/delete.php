@@ -2,42 +2,34 @@
 require_once "../../config/cors.php";
 require_once "../../config/database.php";
 require_once "../../config/auth.php";
+require_once "../../utils/upload.php";
 
 configurarCORS();
-requireAuth(); // ¡Protegido! Solo admins pueden borrar
+requireAuth();
 
-$db = conectarDB();
-$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
+$db   = conectarDB();
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (!isset($data['id'])) {
-    echo json_encode(["success" => false, "message" => "Falta el ID del locutor"]);
+    echo json_encode(['success' => false, 'message' => 'Falta el ID del locutor.']);
     exit;
 }
 
-try {
-    // 1. Primero, buscamos el nombre de la foto para poder borrarla del disco
-    $stmt = $db->prepare("SELECT foto FROM locutores WHERE id = ?");
-    $stmt->execute([$data['id']]);
-    $locutor = $stmt->fetch(PDO::FETCH_ASSOC);
+$id  = (int)$data['id'];
+$loc = $db->query("SELECT foto FROM locutores WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
 
-    if ($locutor && !empty($locutor['foto'])) {
-        $rutaArchivo = __DIR__ . '/../../uploads/locutores/' . $locutor['foto'];
-        
-        // Verificamos si el archivo físico existe y lo borramos
-        if (file_exists($rutaArchivo)) {
-            unlink($rutaArchivo);
-        }
-    }
-
-    // 2. Ahora sí, borramos el registro de la base de datos
-    $stmtDelete = $db->prepare("DELETE FROM locutores WHERE id = ?");
-    $stmtDelete->execute([$data['id']]);
-
-    echo json_encode(["success" => true, "message" => "Locutor y foto eliminados correctamente"]);
-
-} catch (PDOException $e) {
-    echo json_encode(["success" => false, "message" => "Error de BD: " . $e->getMessage()]);
+if (!$loc) {
+    echo json_encode(['success' => false, 'message' => 'Locutor no encontrado.']);
+    exit;
 }
-?>
+
+// Borra la foto del disco (compatible con ruta completa y con nombre solo)
+$foto = $loc['foto'] ?? '';
+if ($foto && !str_starts_with($foto, 'uploads/')) {
+    // Legado: solo nombre de archivo
+    $foto = 'uploads/locutores/' . $foto;
+}
+eliminarImagen($foto);
+
+$db->exec("DELETE FROM locutores WHERE id = $id");
+echo json_encode(['success' => true, 'message' => 'Locutor eliminado.']);
