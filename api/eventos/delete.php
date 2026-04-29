@@ -16,13 +16,10 @@ if (!$data || !isset($data['id'])) {
 $db = conectarDB();
 $id = (int)$data['id'];
 
-$slide = $db->query("SELECT imagen FROM hero_slides WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
-if (!$slide) {
-    echo json_encode(['success' => false, 'message' => 'Slide no encontrado.']);
-    exit;
-}
+$ev = $db->query("SELECT imagen FROM eventos WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
+if (!$ev) { echo json_encode(['success' => false, 'message' => 'Evento no encontrado.']); exit; }
 
-eliminarImagen($slide['imagen']); // borra del disco si es uploads/
-$db->exec("DELETE FROM hero_slides WHERE id = $id");
+eliminarImagen($ev['imagen']);
+$db->exec("DELETE FROM eventos WHERE id = $id");
 
-echo json_encode(['success' => true, 'message' => 'Slide eliminado.']);
+echo json_encode(['success' => true, 'message' => 'Evento eliminado.']);

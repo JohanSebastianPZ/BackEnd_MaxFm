@@ -15,24 +15,21 @@ if (!$data || !isset($data['id'])) {
 $db = conectarDB();
 $id = (int)$data['id'];
 
-$stmt = $db->prepare("UPDATE programas SET
-    titulo=?, descripcion=?, hora_inicio=?, hora_fin=?,
-    horario_texto=?, dias=?, locutor_id=?, destacado=?,
-    activo=?, orden=?, actualizado_en=CURRENT_TIMESTAMP
+$stmt = $db->prepare("UPDATE locutores SET
+    nombre=?, cargo=?, bio=?, instagram_usuario=?, instagram_url=?,
+    destacado=?, activo=?, orden=?, actualizado_en=CURRENT_TIMESTAMP
     WHERE id=?");
 
 $stmt->execute([
-    $data['titulo']        ?? '',
-    $data['descripcion']   ?? '',
-    $data['hora_inicio']   ?? '00:00:00',
-    $data['hora_fin']      ?? '00:00:00',
-    $data['horario_texto'] ?? '',
-    is_array($data['dias']) ? json_encode($data['dias']) : ($data['dias'] ?? '[]'),
-    !empty($data['locutor_id']) ? (int)$data['locutor_id'] : null,
+    $data['nombre']            ?? '',
+    $data['cargo']             ?? '',
+    $data['bio']               ?? '',
+    $data['instagram_usuario'] ?? '',
+    $data['instagram_url']     ?? '',
     isset($data['destacado']) ? (int)$data['destacado'] : 0,
     isset($data['activo'])    ? (int)$data['activo']    : 1,
     isset($data['orden'])     ? (int)$data['orden']     : 0,
     $id,
 ]);
 
-echo json_encode(['success' => true, 'message' => 'Programa actualizado.']);
+echo json_encode(['success' => true, 'message' => 'Locutor actualizado.']);
