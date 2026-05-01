@@ -26,3 +26,9 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Ignorar archivos temporales de SQLite
+*.db-journal
+*.sqlite-journal
+*.db-wal
+*.db-shm
