@@ -87,14 +87,37 @@ $antes   = null;
 $despues = null;
 if ($enVivo) {
     $enVivoInicio = horaAMin($enVivo['hora_inicio']);
+
+    // Programa anterior: el más cercano antes del live en el mismo día
     foreach (array_reverse($hoy) as $p) {
         if ($p['id'] !== $enVivo['id'] && horaAMin($p['hora_inicio']) < $enVivoInicio) {
             $antes = $p; break;
         }
     }
+
+    // Programa siguiente: primero buscar en el mismo día
     foreach ($hoy as $p) {
         if ($p['id'] !== $enVivo['id'] && horaAMin($p['hora_inicio']) > $enVivoInicio) {
             $despues = $p; break;
+        }
+    }
+
+    // Si no hay siguiente hoy, buscar el primer programa de los próximos días
+    if (!$despues) {
+        $diasOrden = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo'];
+        $idxActual = array_search($diaActual, $diasOrden);
+        if ($idxActual !== false) {
+            for ($i = 1; $i <= 6; $i++) {
+                $diaBuscar = $diasOrden[($idxActual + $i) % 7];
+                $proximos  = array_filter($programas, function($p) use ($diaBuscar) {
+                    return in_array($diaBuscar, json_decode($p['dias'], true) ?? []);
+                });
+                if (!empty($proximos)) {
+                    usort($proximos, fn($a, $b) => strcmp($a['hora_inicio'], $b['hora_inicio']));
+                    $despues = array_values($proximos)[0];
+                    break;
+                }
+            }
         }
     }
 }
