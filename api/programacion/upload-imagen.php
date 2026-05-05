@@ -23,8 +23,8 @@ if (!$prog) {
 
 $res = subirImagen($_FILES['imagen'], 'programas', [
     'max_bytes' => 3 * 1024 * 1024,
-    'max_ancho' => 800,
-    'max_alto'  => 800,
+    'max_ancho' => 440, // display 220×120 → 2x retina = 440×240
+    'max_alto'  => 300,
     'calidad'   => 75,
 ]);
 if (!$res['success']) { echo json_encode($res); exit; }

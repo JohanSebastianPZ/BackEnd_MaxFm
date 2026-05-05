@@ -23,8 +23,8 @@ if (!$loc) {
 
 $res = subirImagen($_FILES['foto'], 'locutores', [
     'max_bytes' => 3 * 1024 * 1024,
-    'max_ancho' => 600,
-    'max_alto'  => 800,
+    'max_ancho' => 400, // display 345×345 → 2x = 690, pero portrait → 400×550 suficiente
+    'max_alto'  => 550,
     'calidad'   => 78,
 ]);
 if (!$res['success']) { echo json_encode($res); exit; }

@@ -29,7 +29,7 @@ $imagenPath = null;
 if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
     $res = subirImagen($_FILES['imagen'], 'programas', [
         'max_bytes' => 3 * 1024 * 1024,
-        'max_ancho' => 800,
+        'max_ancho' => 440,
         'max_alto'  => 800,
         'calidad'   => 75,
     ]);
