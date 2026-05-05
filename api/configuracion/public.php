@@ -13,7 +13,7 @@ $row = $db->query("SELECT * FROM config_general LIMIT 1")->fetch(PDO::FETCH_ASSO
 $config = null;
 if ($row) {
     $campos = [
-        'nombre_emisora', 'slogan', 'logo', 'favicon', 'descripcion',
+        'nombre_emisora', 'slogan', 'logo', 'descripcion',
         'url_streaming', 'url_app_android', 'url_app_ios',
         'telefono', 'whatsapp', 'email', 'direccion',
         'facebook', 'instagram', 'tiktok', 'youtube', 'twitter',
