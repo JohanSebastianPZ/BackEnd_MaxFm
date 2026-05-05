@@ -28,8 +28,8 @@ $fotoPath = null;
 if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
     $res = subirImagen($_FILES['foto'], 'locutores', [
         'max_bytes' => 3 * 1024 * 1024,
-        'max_ancho' => 600,
-        'max_alto'  => 800,
+        'max_ancho' => 400,
+        'max_alto'  => 550,
         'calidad'   => 78,
     ]);
     if (!$res['success']) { echo json_encode($res); exit; }

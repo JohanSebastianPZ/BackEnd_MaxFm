@@ -1,5 +1,14 @@
 Options -Indexes
 
+# ── Caché para imágenes subidas por el admin ──────────────────────────────────
+<IfModule mod_expires.c>
+    ExpiresActive On
+    <FilesMatch "\.(webp|avif|png|jpg|jpeg|gif)$">
+        ExpiresDefault "access plus 7 days"
+        Header set Cache-Control "public, max-age=604800"
+    </FilesMatch>
+</IfModule>
+
 # ── Pasar el header Authorization a PHP ──────────────────────────────────────
 # Apache por defecto lo descarta. Estas dos líneas lo restauran.
 RewriteEngine On
