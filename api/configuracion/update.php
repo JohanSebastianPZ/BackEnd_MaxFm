@@ -19,7 +19,7 @@ $db = conectarDB();
 
 // --- config_general ---
 $camposConfig = [
-    'nombre_emisora', 'slogan', 'logo', 'favicon', 'descripcion',
+    'nombre_emisora', 'slogan', 'logo', 'descripcion',
     'url_streaming', 'url_app_android', 'url_app_ios',
     'telefono', 'whatsapp', 'email', 'direccion',
     'facebook', 'instagram', 'tiktok', 'youtube', 'twitter',
