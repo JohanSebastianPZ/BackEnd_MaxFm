@@ -10,10 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Forzamos a que se guarde en api/message/chat_messages.json
 $archivo = __DIR__ . '/chat_messages.json';
 
-$archivo = 'chat_messages.json';
 $data = json_decode(file_get_contents("php://input"), true);
 
 if (!$data || !isset($data['user']) || !isset($data['text'])) {
@@ -21,7 +19,9 @@ if (!$data || !isset($data['user']) || !isset($data['text'])) {
     exit;
 }
 
+// 2. CORRECCIÓN: PHP genera el ID automáticamente
 $nuevoMensaje = [
+    "id" => uniqid(), // Genera un identificador único alfanumérico (ej: 64b8f9a...)
     "user" => htmlspecialchars($data['user']),
     "text" => htmlspecialchars($data['text']),
     "time" => date('h:i A'), // Formato 2:34 PM
