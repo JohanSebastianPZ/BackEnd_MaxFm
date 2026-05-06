@@ -20,10 +20,11 @@ if (!isset($_FILES['imagen']) || $_FILES['imagen']['error'] !== UPLOAD_ERR_OK) {
     exit;
 }
 
+// Eventos se muestran en 347×616px → 2x retina = 694×1232 → máximo 700×1250
 $res = subirImagen($_FILES['imagen'], 'eventos', [
     'max_bytes' => 5 * 1024 * 1024,
-    'max_ancho' => 900,
-    'max_alto'  => 1600,
+    'max_ancho' => 700,
+    'max_alto'  => 1250,
     'calidad'   => 78,
 ]);
 if (!$res['success']) { echo json_encode($res); exit; }
