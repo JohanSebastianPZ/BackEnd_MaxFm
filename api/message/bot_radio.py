@@ -28,6 +28,9 @@ PALABRAS_PROHIBIDAS = [
     "malparido", "gonorrea", "pirobo", "mamaguevo", "mamaguevo", "ctm", "csm"
 ]
 
+# (Opcional pero recomendado) Palabras comunes que no queremos en "Palabras Virales"
+PALABRAS_IGNORADAS = ["este", "esta", "para", "como", "pero", "todo", "toda"]
+
 def procesar_chat():
     if not os.path.exists(ARCHIVO_MENSAJES):
         print("Aún no hay mensajes. Esperando a que PHP cree el archivo...")
@@ -41,9 +44,8 @@ def procesar_chat():
             
             hubo_cambios = False
             
-            # --- 1. MANTENER EL LÍMITE DE 200 MENSAJES ---
             if len(mensajes) > 200:
-                mensajes = mensajes[-200:] # Mantiene solo los últimos 200
+                mensajes = mensajes[-200:] 
                 hubo_cambios = True
 
             usuarios_activos = Counter()
@@ -54,16 +56,19 @@ def procesar_chat():
             for msg in mensajes:
                 texto = msg.get('text', '')
                 usuario = msg.get('user', 'Anónimo')
+
+                # --- Si el mensaje YA fue moderado antes, lo saltamos por completo ---
+                if "🚫 Este mensaje ha sido moderado" in texto:
+                    continue
+
                 texto_lower = texto.lower()
                 usuario_lower = usuario.lower()
 
                 # --- 2. MODERACIÓN DE USUARIO ---
-                # A diferencia del texto, en los usuarios buscamos la palabra incluso si está pegada 
-                # (ej: "elputoamo"), porque los nombres de usuario no suelen tener espacios.
                 if any(mala_palabra in usuario_lower for mala_palabra in PALABRAS_PROHIBIDAS):
                     if msg['user'] != "Usuario Moderado":
                         msg['user'] = "Usuario Moderado"
-                        usuario = "Usuario Moderado" # Lo actualizamos para las estadísticas
+                        usuario = "Usuario Moderado" 
                         hubo_cambios = True
 
                 # --- 3. MODERACIÓN DE TEXTO INTELIGENTE ---
@@ -77,13 +82,20 @@ def procesar_chat():
                     if msg['text'] != "🚫 Este mensaje ha sido moderado.":
                         msg['text'] = "🚫 Este mensaje ha sido moderado."
                         hubo_cambios = True
-                    continue # Si se censura el texto, saltamos las estadísticas de este mensaje
+                    continue 
 
                 # --- ANÁLISIS ---
-                usuarios_activos[usuario] += 1
                 
+                # Solo contamos al usuario si NO es "Usuario Moderado"
+                if usuario != "Usuario Moderado":
+                    usuarios_activos[usuario] += 1
+                
+                # Extraemos palabras de +4 letras
                 palabras = re.findall(r'\b\w{4,}\b', texto_lower) 
-                palabras_totales.update(palabras)
+                
+                # (Extra) Filtramos palabras aburridas para que no ensucien tus "Palabras Virales"
+                palabras_limpias = [p for p in palabras if p not in PALABRAS_IGNORADAS]
+                palabras_totales.update(palabras_limpias)
 
                 if any(p in texto_lower for p in ["pon", "canción", "temazo", "suena", "compláceme"]):
                     peticiones_canciones.append({"usuario": usuario, "texto": texto})
@@ -91,12 +103,10 @@ def procesar_chat():
                 if "desde" in texto_lower or "saludos a" in texto_lower:
                     ubicaciones.append({"usuario": usuario, "texto": texto})
 
-            # Guardamos los cambios si se censuró algo o si se borraron mensajes viejos
             if hubo_cambios:
                 with open(ARCHIVO_MENSAJES, 'w', encoding='utf-8') as f:
                     json.dump(mensajes, f, ensure_ascii=False, indent=2)
 
-        # Estadísticas
         estadisticas = {
             "top_usuarios": usuarios_activos.most_common(5),
             "top_palabras": palabras_totales.most_common(10),
