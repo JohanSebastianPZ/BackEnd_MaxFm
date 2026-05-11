@@ -99,26 +99,38 @@ function subirImagen(array $archivo, string $seccion, array $opciones = []): arr
     // ── 7. Crear directorio de destino ──────────────────────────────────────
     $dirBase = dirname(__DIR__) . '/uploads/' . $seccion . '/';
     if (!is_dir($dirBase)) {
-        mkdir($dirBase, 0755, true);
+        if (!mkdir($dirBase, 0775, true)) {
+            imagedestroy($img);
+            return ['success' => false, 'path' => '', 'message' => "No se pudo crear el directorio uploads/{$seccion}/. Verifica los permisos del servidor."];
+        }
+    }
+
+    // Verificar que el directorio tiene permisos de escritura
+    if (!is_writable($dirBase)) {
+        imagedestroy($img);
+        return ['success' => false, 'path' => '', 'message' => "Sin permisos de escritura en uploads/{$seccion}/. Contacta al administrador del servidor."];
     }
 
     // ── 8. Guardar: preferimos WebP (soporte alfa + mejor compresión) ───────
     $nombre = time() . '_' . uniqid();
+    $ok     = false;
 
     if (function_exists('imagewebp')) {
         $nombreFinal = $nombre . '.webp';
-        imagewebp($img, $dirBase . $nombreFinal, $calidad);
+        $ok = imagewebp($img, $dirBase . $nombreFinal, $calidad);
     } elseif ($mime === 'image/png') {
-        // Fallback: PNG con compresión máxima (nivel 9)
         $nombreFinal = $nombre . '.png';
-        imagepng($img, $dirBase . $nombreFinal, 9);
+        $ok = imagepng($img, $dirBase . $nombreFinal, 9);
     } else {
-        // Fallback: JPEG
         $nombreFinal = $nombre . '.jpg';
-        imagejpeg($img, $dirBase . $nombreFinal, $calidad);
+        $ok = imagejpeg($img, $dirBase . $nombreFinal, $calidad);
     }
 
     imagedestroy($img);
+
+    if (!$ok) {
+        return ['success' => false, 'path' => '', 'message' => "Error al guardar la imagen en uploads/{$seccion}/. Verifica los permisos del directorio."];
+    }
 
     return [
         'success' => true,
