@@ -51,7 +51,9 @@ try {
     $newId = $db->lastInsertId();
 
     // 5. Devolver la noticia recién creada para que React actualice la tabla
-    $noticia = $db->query("SELECT * FROM noticias WHERE id = $newId")->fetch(PDO::FETCH_ASSOC);
+    $sn = $db->prepare("SELECT * FROM noticias WHERE id = :id");
+    $sn->execute([':id' => $newId]);
+    $noticia = $sn->fetch(PDO::FETCH_ASSOC);
     echo json_encode(['success' => true, 'noticia' => $noticia, 'message' => 'Noticia creada con éxito.']);
 
 } catch (PDOException $e) {

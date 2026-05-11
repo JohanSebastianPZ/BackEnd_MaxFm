@@ -7,15 +7,14 @@
  *   subirImagen($_FILES['campo'], 'seccion', $opciones)  → sube y comprime
  *   eliminarImagen('uploads/seccion/archivo.webp')       → borra del disco
  *
- * Uso:
- *   require_once "../../utils/upload.php";
- *   $resultado = subirImagen($_FILES['campo'], 'seccion', $opciones);
- *
  * Opciones disponibles:
- *   max_bytes  → Peso máximo en bytes       (default: 5MB)
- *   max_ancho  → Ancho máximo en píxeles    (default: 1200)
- *   max_alto   → Alto máximo en píxeles     (default: 1200)
- *   calidad    → Calidad WebP/JPEG (0-100)  (default: 75)
+ *   max_bytes   → Peso máximo en bytes       (default: 5MB)
+ *   max_ancho   → Ancho máximo en píxeles    (default: 1200)
+ *   max_alto    → Alto máximo en píxeles     (default: 1200)
+ *   calidad     → Calidad WebP/JPEG (0-100)  (default: 75)
+ *   thumb_ancho → Ancho de miniatura (opcional)
+ *   thumb_alto  → Alto de miniatura (opcional)
+ *   thumb_calidad → Calidad miniatura (default: 65)
  *
  * El archivo siempre se guarda en: uploads/{seccion}/
  * Retorna: ['success' => bool, 'path' => string, 'message' => string]
@@ -23,13 +22,21 @@
 
 function subirImagen(array $archivo, string $seccion, array $opciones = []): array
 {
-    $maxBytes    = $opciones['max_bytes']    ?? 5 * 1024 * 1024;
-    $maxAncho    = $opciones['max_ancho']    ?? 1200;
-    $maxAlto     = $opciones['max_alto']     ?? 1200;
-    $calidad     = $opciones['calidad']      ?? 75;
-    // Miniatura opcional: si se especifican thumb_ancho/thumb_alto se genera automáticamente
-    $thumbAncho  = $opciones['thumb_ancho']  ?? 0;
-    $thumbAlto   = $opciones['thumb_alto']   ?? 0;
+    // ob_start captura warnings/notices de GD para que no corrompan el JSON
+    ob_start();
+    $res = _subirImagenInterno($archivo, $seccion, $opciones);
+    ob_end_clean();
+    return $res;
+}
+
+function _subirImagenInterno(array $archivo, string $seccion, array $opciones = []): array
+{
+    $maxBytes     = $opciones['max_bytes']     ?? 5 * 1024 * 1024;
+    $maxAncho     = $opciones['max_ancho']     ?? 1200;
+    $maxAlto      = $opciones['max_alto']      ?? 1200;
+    $calidad      = $opciones['calidad']       ?? 75;
+    $thumbAncho   = $opciones['thumb_ancho']   ?? 0;
+    $thumbAlto    = $opciones['thumb_alto']    ?? 0;
     $thumbCalidad = $opciones['thumb_calidad'] ?? 65;
 
     // ── 1. Error de subida ──────────────────────────────────────────────────
@@ -85,13 +92,10 @@ function subirImagen(array $archivo, string $seccion, array $opciones = []): arr
         $nAlto  = (int) round($alto  * $ratio);
 
         $imgR = imagecreatetruecolor($nAncho, $nAlto);
-
-        // Preservar canal alfa (transparencia)
         imagealphablending($imgR, false);
         imagesavealpha($imgR, true);
         $alfa = imagecolorallocatealpha($imgR, 0, 0, 0, 127);
         imagefilledrectangle($imgR, 0, 0, $nAncho, $nAlto, $alfa);
-
         imagecopyresampled($imgR, $img, 0, 0, 0, 0, $nAncho, $nAlto, $ancho, $alto);
         imagedestroy($img);
 
@@ -109,7 +113,6 @@ function subirImagen(array $archivo, string $seccion, array $opciones = []): arr
         }
     }
 
-    // Verificar que el directorio tiene permisos de escritura
     if (!is_writable($dirBase)) {
         imagedestroy($img);
         return ['success' => false, 'path' => '', 'message' => "Sin permisos de escritura en uploads/{$seccion}/. Contacta al administrador del servidor."];
@@ -130,15 +133,14 @@ function subirImagen(array $archivo, string $seccion, array $opciones = []): arr
         $ok = imagejpeg($img, $dirBase . $nombreFinal, $calidad);
     }
 
-    imagedestroy($img);
-
     if (!$ok) {
+        imagedestroy($img);
         return ['success' => false, 'path' => '', 'message' => "Error al guardar la imagen en uploads/{$seccion}/. Verifica los permisos del directorio."];
     }
 
     $fullPath = 'uploads/' . $seccion . '/' . $nombreFinal;
 
-    // ── 9. Generar miniatura (si se solicitó) ──────────────────────────────────
+    // ── 9. Miniatura desde el recurso en memoria (sin recargar del disco) ───
     $thumbPath = null;
     if ($thumbAncho > 0 && $thumbAlto > 0) {
         $thumbDir = $dirBase . 'thumb/';
@@ -146,27 +148,24 @@ function subirImagen(array $archivo, string $seccion, array $opciones = []): arr
             mkdir($thumbDir, 0775, true);
         }
         if (is_writable($thumbDir)) {
-            // Recargar la imagen guardada para generar la miniatura
-            $imgSaved = imagecreatefromwebp($dirBase . $nombreFinal);
-            if ($imgSaved) {
-                $srcW = imagesx($imgSaved);
-                $srcH = imagesy($imgSaved);
-                $ratio = min($thumbAncho / $srcW, $thumbAlto / $srcH);
-                $tW = (int) round($srcW * $ratio);
-                $tH = (int) round($srcH * $ratio);
-                $thumb = imagecreatetruecolor($tW, $tH);
-                imagealphablending($thumb, false);
-                imagesavealpha($thumb, true);
-                imagecopyresampled($thumb, $imgSaved, 0, 0, 0, 0, $tW, $tH, $srcW, $srcH);
-                imagedestroy($imgSaved);
-                $thumbOk = imagewebp($thumb, $thumbDir . $nombreFinal, $thumbCalidad);
-                imagedestroy($thumb);
-                if ($thumbOk) {
-                    $thumbPath = 'uploads/' . $seccion . '/thumb/' . $nombreFinal;
-                }
+            $ratio = min($thumbAncho / $ancho, $thumbAlto / $alto);
+            $tW    = (int) round($ancho * $ratio);
+            $tH    = (int) round($alto  * $ratio);
+            $thumb = imagecreatetruecolor($tW, $tH);
+            imagealphablending($thumb, false);
+            imagesavealpha($thumb, true);
+            $alfaT = imagecolorallocatealpha($thumb, 0, 0, 0, 127);
+            imagefilledrectangle($thumb, 0, 0, $tW, $tH, $alfaT);
+            imagecopyresampled($thumb, $img, 0, 0, 0, 0, $tW, $tH, $ancho, $alto);
+            $thumbOk = imagewebp($thumb, $thumbDir . $nombreFinal, $thumbCalidad);
+            imagedestroy($thumb);
+            if ($thumbOk) {
+                $thumbPath = 'uploads/' . $seccion . '/thumb/' . $nombreFinal;
             }
         }
     }
+
+    imagedestroy($img);
 
     return [
         'success' => true,
@@ -182,14 +181,11 @@ function subirImagen(array $archivo, string $seccion, array $opciones = []): arr
  * Elimina del disco una imagen subida por el sistema.
  * Solo actúa sobre rutas relativas que empiecen por "uploads/"
  * para evitar borrar archivos del sistema por error.
- *
- * @param string|null $ruta  Ruta relativa guardada en BD (ej: "uploads/configuracion/xxx.webp")
- * @return bool  true si se eliminó, false si no existía o no era una ruta válida
  */
 function eliminarImagen(?string $ruta): bool
 {
-    if (!$ruta || strpos($ruta, 'uploads/') !== 0) { // Compatible PHP 7.4+ (str_starts_with requiere PHP 8.0)
-        return false; // No es un archivo nuestro (URL externa, vacío, etc.)
+    if (!$ruta || strpos($ruta, 'uploads/') !== 0) {
+        return false;
     }
 
     $rutaAbsoluta = dirname(__DIR__) . '/' . $ruta;

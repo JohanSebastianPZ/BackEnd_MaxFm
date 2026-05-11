@@ -17,7 +17,9 @@ $id = (int)$_POST['id'];
 $db = conectarDB();
 
 // 2. Buscamos la noticia para obtener la ruta de la imagen vieja
-$noticia = $db->query("SELECT imagen FROM noticias WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
+$s = $db->prepare("SELECT imagen FROM noticias WHERE id = :id");
+$s->execute([':id' => $id]);
+$noticia = $s->fetch(PDO::FETCH_ASSOC);
 if (!$noticia) {
     echo json_encode(['success' => false, 'message' => 'Noticia no encontrada.']);
     exit;

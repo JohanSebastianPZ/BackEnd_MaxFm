@@ -15,7 +15,9 @@ if (!isset($_FILES['foto'], $_POST['id'])) {
 $id = (int)$_POST['id'];
 $db = conectarDB();
 
-$loc = $db->query("SELECT foto FROM locutores WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
+$s = $db->prepare("SELECT foto FROM locutores WHERE id = :id");
+$s->execute([':id' => $id]);
+$loc = $s->fetch(PDO::FETCH_ASSOC);
 if (!$loc) {
     echo json_encode(['success' => false, 'message' => 'Locutor no encontrado.']);
     exit;
