@@ -15,7 +15,9 @@ if (!isset($_FILES['imagen'], $_POST['id'])) {
 $id = (int) $_POST['id'];
 $db = conectarDB();
 
-$slide = $db->query("SELECT imagen FROM hero_slides WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
+$s     = $db->prepare("SELECT imagen FROM hero_slides WHERE id = :id");
+$s->execute([':id' => $id]);
+$slide = $s->fetch(PDO::FETCH_ASSOC);
 if (!$slide) {
     echo json_encode(['success' => false, 'message' => 'Slide no encontrado.']);
     exit;

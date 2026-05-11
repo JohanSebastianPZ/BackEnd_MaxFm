@@ -30,7 +30,12 @@ function extraerToken(): string {
         }
     }
 
-    // 4. Fallback: token en el body JSON (para peticiones POST que lo envíen)
+    // 4. Fallback: token en $_POST (multipart/form-data — php://input está vacío en uploads)
+    if (!empty($_POST['token'])) {
+        return $_POST['token'];
+    }
+
+    // 5. Fallback: token en el body JSON (peticiones POST con Content-Type: application/json)
     $raw = file_get_contents('php://input');
     if ($raw) {
         $data = json_decode($raw, true);
