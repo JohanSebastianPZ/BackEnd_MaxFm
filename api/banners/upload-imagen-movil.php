@@ -17,7 +17,9 @@ $db = conectarDB();
 
 try { $db->exec("ALTER TABLE hero_slides ADD COLUMN imagen_movil TEXT"); } catch (PDOException $e) {}
 
-$slide = $db->query("SELECT imagen_movil FROM hero_slides WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
+$s     = $db->prepare("SELECT imagen_movil FROM hero_slides WHERE id = :id");
+$s->execute([':id' => $id]);
+$slide = $s->fetch(PDO::FETCH_ASSOC);
 if (!$slide) {
     echo json_encode(['success' => false, 'message' => 'Slide no encontrado.']);
     exit;
