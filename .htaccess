@@ -1,5 +1,13 @@
 Options -Indexes
 
+# ── Fallback de miniaturas: si thumb/ no existe, sirve el original ─────────────
+# Esto permite que imágenes viejas funcionen sin miniatura sin error 404
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^uploads/([^/]+)/thumb/(.+)$ /uploads/$1/$2 [L,R=302]
+</IfModule>
+
 # ── Caché para imágenes subidas por el admin ──────────────────────────────────
 # Los nombres incluyen timestamp+uniqid → son inmutables, 1 año de caché
 <IfModule mod_expires.c>

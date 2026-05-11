@@ -22,10 +22,13 @@ if (!isset($_FILES['imagen']) || $_FILES['imagen']['error'] !== UPLOAD_ERR_OK) {
 
 // Eventos se muestran en 347×616px → 2x retina = 694×1232 → máximo 700×1250
 $res = subirImagen($_FILES['imagen'], 'eventos', [
-    'max_bytes' => 5 * 1024 * 1024,
-    'max_ancho' => 700,
-    'max_alto'  => 1250,
-    'calidad'   => 78,
+    'max_bytes'    => 5 * 1024 * 1024,
+    'max_ancho'    => 700,
+    'max_alto'     => 1250,
+    'calidad'      => 78,
+    'thumb_ancho'  => 350,  // tarjeta mobile: 375px CSS × ~0.9x (portrait 9:16)
+    'thumb_alto'   => 620,
+    'thumb_calidad'=> 65,
 ]);
 if (!$res['success']) { echo json_encode($res); exit; }
 

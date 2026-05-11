@@ -28,10 +28,13 @@ if (!$titulo) {
 $imagenPath = null;
 if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
     $res = subirImagen($_FILES['imagen'], 'programas', [
-        'max_bytes' => 3 * 1024 * 1024,
-        'max_ancho' => 440,
-        'max_alto'  => 800,
-        'calidad'   => 75,
+        'max_bytes'    => 3 * 1024 * 1024,
+        'max_ancho'    => 440,
+        'max_alto'     => 800,
+        'calidad'      => 75,
+        'thumb_ancho'  => 220,  // SliderCard: ~193px CSS × 1x en desktop / 385px en mobile → mini
+        'thumb_alto'   => 150,
+        'thumb_calidad'=> 65,
     ]);
     if (!$res['success']) { echo json_encode($res); exit; }
     $imagenPath = $res['path'];

@@ -25,10 +25,13 @@ if (!$noticia) {
 
 // 3. Procesamos y subimos la nueva imagen (Ajustado para formato panorámico)
 $res = subirImagen($_FILES['imagen'], 'noticias', [
-    'max_bytes' => 5 * 1024 * 1024, // 5 MB
-    'max_ancho' => 1200,            // Ideal para cabeceras de noticias
-    'max_alto'  => 800,
-    'calidad'   => 80,
+    'max_bytes'    => 5 * 1024 * 1024,
+    'max_ancho'    => 900,
+    'max_alto'     => 560,
+    'calidad'      => 80,
+    'thumb_ancho'  => 400,
+    'thumb_alto'   => 250,
+    'thumb_calidad'=> 65,
 ]);
 
 // Si algo falló al subir, devolvemos el error

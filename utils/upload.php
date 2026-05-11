@@ -23,10 +23,14 @@
 
 function subirImagen(array $archivo, string $seccion, array $opciones = []): array
 {
-    $maxBytes = $opciones['max_bytes'] ?? 5 * 1024 * 1024; // 5 MB
-    $maxAncho = $opciones['max_ancho'] ?? 1200;
-    $maxAlto  = $opciones['max_alto']  ?? 1200;
-    $calidad  = $opciones['calidad']   ?? 75; // calidad 75 → ~70-80% reducción vs original
+    $maxBytes    = $opciones['max_bytes']    ?? 5 * 1024 * 1024;
+    $maxAncho    = $opciones['max_ancho']    ?? 1200;
+    $maxAlto     = $opciones['max_alto']     ?? 1200;
+    $calidad     = $opciones['calidad']      ?? 75;
+    // Miniatura opcional: si se especifican thumb_ancho/thumb_alto se genera automáticamente
+    $thumbAncho  = $opciones['thumb_ancho']  ?? 0;
+    $thumbAlto   = $opciones['thumb_alto']   ?? 0;
+    $thumbCalidad = $opciones['thumb_calidad'] ?? 65;
 
     // ── 1. Error de subida ──────────────────────────────────────────────────
     if ($archivo['error'] !== UPLOAD_ERR_OK) {
@@ -132,10 +136,45 @@ function subirImagen(array $archivo, string $seccion, array $opciones = []): arr
         return ['success' => false, 'path' => '', 'message' => "Error al guardar la imagen en uploads/{$seccion}/. Verifica los permisos del directorio."];
     }
 
+    $fullPath = 'uploads/' . $seccion . '/' . $nombreFinal;
+
+    // ── 9. Generar miniatura (si se solicitó) ──────────────────────────────────
+    $thumbPath = null;
+    if ($thumbAncho > 0 && $thumbAlto > 0) {
+        $thumbDir = $dirBase . 'thumb/';
+        if (!is_dir($thumbDir)) {
+            mkdir($thumbDir, 0775, true);
+        }
+        if (is_writable($thumbDir)) {
+            // Recargar la imagen guardada para generar la miniatura
+            $imgSaved = imagecreatefromwebp($dirBase . $nombreFinal);
+            if ($imgSaved) {
+                $srcW = imagesx($imgSaved);
+                $srcH = imagesy($imgSaved);
+                $ratio = min($thumbAncho / $srcW, $thumbAlto / $srcH);
+                $tW = (int) round($srcW * $ratio);
+                $tH = (int) round($srcH * $ratio);
+                $thumb = imagecreatetruecolor($tW, $tH);
+                imagealphablending($thumb, false);
+                imagesavealpha($thumb, true);
+                imagecopyresampled($thumb, $imgSaved, 0, 0, 0, 0, $tW, $tH, $srcW, $srcH);
+                imagedestroy($imgSaved);
+                $thumbOk = imagewebp($thumb, $thumbDir . $nombreFinal, $thumbCalidad);
+                imagedestroy($thumb);
+                if ($thumbOk) {
+                    $thumbPath = 'uploads/' . $seccion . '/thumb/' . $nombreFinal;
+                }
+            }
+        }
+    }
+
     return [
         'success' => true,
-        'path'    => 'uploads/' . $seccion . '/' . $nombreFinal,
-        'message' => 'Imagen procesada y comprimida correctamente.',
+        'path'    => $fullPath,
+        'thumb'   => $thumbPath,
+        'message' => "Imagen guardada: {$ancho}×{$alto} px.",
+        'width'   => $ancho,
+        'height'  => $alto,
     ];
 }
 

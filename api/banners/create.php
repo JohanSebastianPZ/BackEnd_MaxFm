@@ -24,10 +24,10 @@ if ($tipo === 'video') {
     $imagenPath = trim($_POST['imagen_url']);
 } elseif (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
     $res = subirImagen($_FILES['imagen'], 'hero', [
-        'max_bytes' => 5 * 1024 * 1024,
+        'max_bytes' => 15 * 1024 * 1024,
         'max_ancho' => 1920,
         'max_alto'  => 1080,
-        'calidad'   => 75,
+        'calidad'   => 80,
     ]);
     if (!$res['success']) { echo json_encode($res); exit; }
     $imagenPath = $res['path'];

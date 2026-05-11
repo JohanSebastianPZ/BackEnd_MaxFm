@@ -24,10 +24,10 @@ if (!$slide) {
 }
 
 $res = subirImagen($_FILES['imagen'], 'hero', [
-    'max_bytes' => 10 * 1024 * 1024,
-    'max_ancho' => 2920,
-    'max_alto' => 1800,
-    'calidad' => 75,
+    'max_bytes' => 15 * 1024 * 1024,  // diseñadores entregan archivos grandes
+    'max_ancho' => 1920,              // Full HD — cubre la mayoría de pantallas desktop
+    'max_alto'  => 1080,
+    'calidad'   => 80,
 ]);
 
 if (!$res['success']) {

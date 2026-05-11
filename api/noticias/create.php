@@ -28,10 +28,13 @@ try {
     // Fíjate que ahora buscamos 'imagen' en lugar de 'foto'
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
         $res = subirImagen($_FILES['imagen'], 'noticias', [
-            'max_bytes' => 5 * 1024 * 1024, // 5MB permitidos
-            'max_ancho' => 1200,            // Ideal para formato panorámico (16:9)
-            'max_alto'  => 800,
-            'calidad'   => 80,
+            'max_bytes'    => 5 * 1024 * 1024,
+            'max_ancho'    => 900,
+            'max_alto'     => 560,
+            'calidad'      => 80,
+            'thumb_ancho'  => 400,  // tarjeta card: ~375px CSS × ~1x en mobile
+            'thumb_alto'   => 250,
+            'thumb_calidad'=> 65,
         ]);
         if (!$res['success']) { 
             echo json_encode($res); 
