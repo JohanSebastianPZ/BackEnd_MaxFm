@@ -16,10 +16,13 @@ if (!$data || !isset($data['id'])) {
 $db = conectarDB();
 $id = (int)$data['id'];
 
-$ev = $db->query("SELECT imagen FROM eventos WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
+$s  = $db->prepare("SELECT imagen FROM eventos WHERE id = :id");
+$s->execute([':id' => $id]);
+$ev = $s->fetch(PDO::FETCH_ASSOC);
 if (!$ev) { echo json_encode(['success' => false, 'message' => 'Evento no encontrado.']); exit; }
 
 eliminarImagen($ev['imagen']);
-$db->exec("DELETE FROM eventos WHERE id = $id");
+$d = $db->prepare("DELETE FROM eventos WHERE id = :id");
+$d->execute([':id' => $id]);
 
 echo json_encode(['success' => true, 'message' => 'Evento eliminado.']);

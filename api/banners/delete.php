@@ -18,7 +18,9 @@ $id = (int)$data['id'];
 
 try { $db->exec("ALTER TABLE hero_slides ADD COLUMN imagen_movil TEXT"); } catch (PDOException $e) {}
 
-$slide = $db->query("SELECT imagen, imagen_movil FROM hero_slides WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
+$s     = $db->prepare("SELECT imagen, imagen_movil FROM hero_slides WHERE id = :id");
+$s->execute([':id' => $id]);
+$slide = $s->fetch(PDO::FETCH_ASSOC);
 if (!$slide) {
     echo json_encode(['success' => false, 'message' => 'Slide no encontrado.']);
     exit;
@@ -26,6 +28,7 @@ if (!$slide) {
 
 eliminarImagen($slide['imagen']);
 if (!empty($slide['imagen_movil'])) eliminarImagen($slide['imagen_movil']);
-$db->exec("DELETE FROM hero_slides WHERE id = $id");
+$d = $db->prepare("DELETE FROM hero_slides WHERE id = :id");
+$d->execute([':id' => $id]);
 
 echo json_encode(['success' => true, 'message' => 'Slide eliminado.']);

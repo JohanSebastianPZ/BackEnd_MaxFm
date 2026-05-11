@@ -1,17 +1,12 @@
 <?php
-// 1. Cabeceras estrictas (CORS)
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json; charset=UTF-8");
+require_once "../../config/cors.php";
+require_once "../../config/database.php";
+require_once "../../config/auth.php";
 
-// Manejo del Preflight de React
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
+configurarCORS();
+requireAuth(); // Solo el admin puede eliminar mensajes del chat
 
-// 2. Recibir los datos enviados por React
+// Recibir los datos enviados por React
 $data = json_decode(file_get_contents("php://input"), true);
 
 // Validar que exista el ID

@@ -16,7 +16,9 @@ if (!isset($data['id'])) {
 }
 
 $id  = (int)$data['id'];
-$loc = $db->query("SELECT imagen FROM noticias WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
+$s   = $db->prepare("SELECT imagen FROM noticias WHERE id = :id");
+$s->execute([':id' => $id]);
+$loc = $s->fetch(PDO::FETCH_ASSOC);
 
 if (!$loc) {
     echo json_encode(['success' => false, 'message' => 'Locutor no encontrado.']);
@@ -31,5 +33,6 @@ if ($foto && !str_starts_with($foto, 'uploads/')) {
 }
 eliminarImagen($foto);
 
-$db->exec("DELETE FROM noticias WHERE id = $id");
+$d = $db->prepare("DELETE FROM noticias WHERE id = :id");
+$d->execute([':id' => $id]);
 echo json_encode(['success' => true, 'message' => 'Noticia eliminada.']);

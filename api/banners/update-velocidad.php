@@ -19,9 +19,11 @@ try { $db->exec("ALTER TABLE config_general ADD COLUMN hero_velocidad INTEGER DE
 
 $row = $db->query("SELECT id FROM config_general LIMIT 1")->fetch(PDO::FETCH_ASSOC);
 if ($row) {
-    $db->exec("UPDATE config_general SET hero_velocidad = $velocidad WHERE id = {$row['id']}");
+    $u = $db->prepare("UPDATE config_general SET hero_velocidad = :v WHERE id = :id");
+    $u->execute([':v' => $velocidad, ':id' => $row['id']]);
 } else {
-    $db->exec("INSERT INTO config_general (hero_velocidad) VALUES ($velocidad)");
+    $i = $db->prepare("INSERT INTO config_general (hero_velocidad) VALUES (:v)");
+    $i->execute([':v' => $velocidad]);
 }
 
 echo json_encode(['success' => true, 'velocidad' => $velocidad]);

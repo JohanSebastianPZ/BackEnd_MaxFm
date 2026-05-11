@@ -16,13 +16,16 @@ if (!$data || !isset($data['id'])) {
 $db = conectarDB();
 $id = (int)$data['id'];
 
-$prog = $db->query("SELECT imagen FROM programas WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
+$s    = $db->prepare("SELECT imagen FROM programas WHERE id = :id");
+$s->execute([':id' => $id]);
+$prog = $s->fetch(PDO::FETCH_ASSOC);
 if (!$prog) {
     echo json_encode(['success' => false, 'message' => 'Programa no encontrado.']);
     exit;
 }
 
 eliminarImagen($prog['imagen']);
-$db->exec("DELETE FROM programas WHERE id = $id");
+$d = $db->prepare("DELETE FROM programas WHERE id = :id");
+$d->execute([':id' => $id]);
 
 echo json_encode(['success' => true, 'message' => 'Programa eliminado.']);
