@@ -27,7 +27,7 @@ if (!$loc) {
 
 // Borra la foto del disco (compatible con ruta completa y con nombre solo)
 $foto = $loc['foto'] ?? '';
-if ($foto && !str_starts_with($foto, 'uploads/')) {
+if ($foto && strpos($foto, 'uploads/') !== 0) {
     // Legado: solo nombre de archivo
     $foto = 'uploads/locutores/' . $foto;
 }

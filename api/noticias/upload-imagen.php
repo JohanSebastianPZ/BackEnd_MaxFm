@@ -39,7 +39,7 @@ if (!$res['success']) {
 
 // 4. Borramos la imagen anterior para no llenar el servidor de archivos basura
 $imagenAnterior = $noticia['imagen'] ?? '';
-if ($imagenAnterior && !str_starts_with($imagenAnterior, 'uploads/')) {
+if ($imagenAnterior && strpos($imagenAnterior, 'uploads/') !== 0) {
     $imagenAnterior = 'uploads/noticias/' . $imagenAnterior;
 }
 eliminarImagen($imagenAnterior);

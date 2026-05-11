@@ -60,12 +60,12 @@ function subirImagen(array $archivo, string $seccion, array $opciones = []): arr
     }
 
     // ── 5. Cargar imagen en memoria ─────────────────────────────────────────
-    $img = match ($mime) {
-        'image/jpeg' => imagecreatefromjpeg($archivo['tmp_name']),
-        'image/png'  => imagecreatefrompng($archivo['tmp_name']),
-        'image/webp' => imagecreatefromwebp($archivo['tmp_name']),
-        'image/gif'  => imagecreatefromgif($archivo['tmp_name']),
-    };
+    // Compatible con PHP 7.4+ (match requiere PHP 8.0)
+    if ($mime === 'image/jpeg')      { $img = imagecreatefromjpeg($archivo['tmp_name']); }
+    elseif ($mime === 'image/png')   { $img = imagecreatefrompng($archivo['tmp_name']);  }
+    elseif ($mime === 'image/webp')  { $img = imagecreatefromwebp($archivo['tmp_name']); }
+    elseif ($mime === 'image/gif')   { $img = imagecreatefromgif($archivo['tmp_name']);  }
+    else                             { $img = false; }
 
     if (!$img) {
         return ['success' => false, 'path' => '', 'message' => 'No se pudo procesar la imagen.'];
@@ -137,7 +137,7 @@ function subirImagen(array $archivo, string $seccion, array $opciones = []): arr
  */
 function eliminarImagen(?string $ruta): bool
 {
-    if (!$ruta || !str_starts_with($ruta, 'uploads/')) {
+    if (!$ruta || strpos($ruta, 'uploads/') !== 0) { // Compatible PHP 7.4+ (str_starts_with requiere PHP 8.0)
         return false; // No es un archivo nuestro (URL externa, vacío, etc.)
     }
 

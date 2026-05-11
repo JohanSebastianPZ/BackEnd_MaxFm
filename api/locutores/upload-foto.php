@@ -31,7 +31,7 @@ if (!$res['success']) { echo json_encode($res); exit; }
 
 // Borrar foto anterior (compatible con ambos formatos)
 $fotoAnterior = $loc['foto'] ?? '';
-if ($fotoAnterior && !str_starts_with($fotoAnterior, 'uploads/')) {
+if ($fotoAnterior && strpos($fotoAnterior, 'uploads/') !== 0) {
     $fotoAnterior = 'uploads/locutores/' . $fotoAnterior;
 }
 eliminarImagen($fotoAnterior);
