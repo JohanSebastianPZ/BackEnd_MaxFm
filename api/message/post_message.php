@@ -5,6 +5,8 @@ header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Ac
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header('Content-Type: application/json');
 
+date_default_timezone_set('Europe/Madrid');
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -24,7 +26,7 @@ $nuevoMensaje = [
     "id" => uniqid(), // Genera un identificador único alfanumérico (ej: 64b8f9a...)
     "user" => htmlspecialchars($data['user']),
     "text" => htmlspecialchars($data['text']),
-    "time" => date('h:i A'), // Formato 2:34 PM
+    "time" => date('d/m/Y H:i'),
     "host" => false
 ];
 

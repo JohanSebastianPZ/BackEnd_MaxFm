@@ -8,9 +8,10 @@ from filelock import FileLock
 # 1. RUTA MÁGICA ABSOLUTA
 DIR_ACTUAL = os.path.dirname(os.path.abspath(__file__))
 
-ARCHIVO_MENSAJES = os.path.join(DIR_ACTUAL, 'chat_messages.json')
+ARCHIVO_MENSAJES    = os.path.join(DIR_ACTUAL, 'chat_messages.json')
 ARCHIVO_ESTADISTICAS = os.path.join(DIR_ACTUAL, 'chat_stats.json')
-LOCK_FILE = os.path.join(DIR_ACTUAL, 'chat_messages.json.lock')
+ARCHIVO_HEARTBEAT   = os.path.join(DIR_ACTUAL, 'bot_heartbeat.json')
+LOCK_FILE           = os.path.join(DIR_ACTUAL, 'chat_messages.json.lock')
 
 PALABRAS_PROHIBIDAS = [
     # General / España
@@ -120,8 +121,17 @@ def procesar_chat():
     except Exception as e:
         print(f"Error procesando: {e}")
 
+def escribir_heartbeat():
+    """Escribe un timestamp cada iteración para que el dashboard sepa que el bot está vivo."""
+    try:
+        with open(ARCHIVO_HEARTBEAT, 'w', encoding='utf-8') as f:
+            json.dump({"ts": time.time(), "hora": time.strftime('%H:%M:%S')}, f)
+    except Exception as e:
+        print(f"Error escribiendo heartbeat: {e}")
+
 if __name__ == "__main__":
     print("Iniciando Bot de Moderación y Análisis de MAX FM...")
     while True:
+        escribir_heartbeat()   # siempre, antes de procesar
         procesar_chat()
         time.sleep(3)
