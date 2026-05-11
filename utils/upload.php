@@ -157,7 +157,13 @@ function _subirImagenInterno(array $archivo, string $seccion, array $opciones = 
             $alfaT = imagecolorallocatealpha($thumb, 0, 0, 0, 127);
             imagefilledrectangle($thumb, 0, 0, $tW, $tH, $alfaT);
             imagecopyresampled($thumb, $img, 0, 0, 0, 0, $tW, $tH, $ancho, $alto);
-            $thumbOk = imagewebp($thumb, $thumbDir . $nombreFinal, $thumbCalidad);
+            if (function_exists('imagewebp')) {
+                $thumbOk = imagewebp($thumb, $thumbDir . $nombreFinal, $thumbCalidad);
+            } elseif (substr($nombreFinal, -4) === '.png') {
+                $thumbOk = imagepng($thumb, $thumbDir . $nombreFinal, 9);
+            } else {
+                $thumbOk = imagejpeg($thumb, $thumbDir . $nombreFinal, $thumbCalidad);
+            }
             imagedestroy($thumb);
             if ($thumbOk) {
                 $thumbPath = 'uploads/' . $seccion . '/thumb/' . $nombreFinal;
