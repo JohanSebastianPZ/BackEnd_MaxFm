@@ -36,9 +36,18 @@ if ($user && password_verify($password, $user['password_hash'])) {
     // Generamos un token único y seguro
     $token = bin2hex(random_bytes(32));
 
-    // Guardamos el token en la base de datos para este usuario
-    $updateStmt = $db->prepare("UPDATE usuarios SET token_sesion = :token, ultimo_acceso = CURRENT_TIMESTAMP WHERE id = :id");
+    // Guardar token e IP del admin (para excluirla del contador de visitas)
+    $admin_ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
+    if (strpos($admin_ip, ',') !== false) {
+        $admin_ip = trim(explode(',', $admin_ip)[0]);
+    }
+    $admin_ip = filter_var($admin_ip, FILTER_VALIDATE_IP) ?: '';
+
+    try { $db->exec("ALTER TABLE usuarios ADD COLUMN last_login_ip TEXT"); } catch (PDOException $e) {}
+
+    $updateStmt = $db->prepare("UPDATE usuarios SET token_sesion = :token, ultimo_acceso = CURRENT_TIMESTAMP, last_login_ip = :ip WHERE id = :id");
     $updateStmt->bindParam(':token', $token);
+    $updateStmt->bindParam(':ip', $admin_ip);
     $updateStmt->bindParam(':id', $user['id']);
     $updateStmt->execute();
 
