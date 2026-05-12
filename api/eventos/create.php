@@ -28,7 +28,7 @@ $res = subirImagen($_FILES['imagen'], 'eventos', [
     'calidad'      => 78,
     'thumb_ancho'  => 350,  // tarjeta mobile: 375px CSS × ~0.9x (portrait 9:16)
     'thumb_alto'   => 620,
-    'thumb_calidad'=> 65,
+    'thumb_calidad'=> 75,
 ]);
 if (!$res['success']) { echo json_encode($res); exit; }
 
