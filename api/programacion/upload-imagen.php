@@ -28,7 +28,7 @@ $res = subirImagen($_FILES['imagen'], 'programas', [
     'calidad'      => 75,
     'thumb_ancho'  => 220,
     'thumb_alto'   => 150,
-    'thumb_calidad'=> 65,
+    'thumb_calidad'=> 80,
 ]);
 if (!$res['success']) { echo json_encode($res); exit; }
 

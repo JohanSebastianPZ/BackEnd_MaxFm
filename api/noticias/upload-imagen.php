@@ -33,7 +33,7 @@ $res = subirImagen($_FILES['imagen'], 'noticias', [
     'calidad'      => 80,
     'thumb_ancho'  => 400,
     'thumb_alto'   => 250,
-    'thumb_calidad'=> 65,
+    'thumb_calidad'=> 80,
 ]);
 
 // Si algo falló al subir, devolvemos el error

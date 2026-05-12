@@ -34,7 +34,7 @@ try {
             'calidad'      => 80,
             'thumb_ancho'  => 400,  // tarjeta card: ~375px CSS × ~1x en mobile
             'thumb_alto'   => 250,
-            'thumb_calidad'=> 65,
+            'thumb_calidad'=> 80,
         ]);
         if (!$res['success']) { 
             echo json_encode($res); 
